@@ -3,3 +3,28 @@
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 .vscode/ipch
+secrets.h
+
+# --- Node-RED specific ---
+settings.js
+
+# 1. Credentials
+*_cred.json
+flows_cred.json
+
+# 2. Runtime files
+.config.json
+.config.*.json
+*.backup
+.sessions.json
+package-lock.json
+
+# 3. Node Modules
+node_modules/
+
+# --- System specific ---
+.DS_Store
+Thumbs.db
+
+# --- Logs ---
+*.log

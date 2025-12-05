@@ -1,0 +1,329 @@
+[
+    {
+        "id": "f0bc5fa387442a1c",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "b3f533b9e7b672d2",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-contrib-prometheus-exporter": "1.0.5"
+        }
+    },
+    {
+        "id": "2b6bb2b5616dd2ef",
+        "type": "prometheus-metric-config",
+        "name": "metric_pzem",
+        "help": "data from pzem sensor",
+        "labels": "label_current, label_power, label_voltage, label_freq",
+        "mtype": "gauge"
+    },
+    {
+        "id": "15244e71d2a80aeb",
+        "type": "http in",
+        "z": "f0bc5fa387442a1c",
+        "name": "data1",
+        "url": "/sensor",
+        "method": "post",
+        "upload": false,
+        "skipBodyParsing": false,
+        "swaggerDoc": "",
+        "x": 690,
+        "y": 400,
+        "wires": [
+            [
+                "3a0ddf0957734e81",
+                "935bb4ba629ac2fd",
+                "18ee52049ea4ad23",
+                "91bdfae52327c285",
+                "a702b93bd27d087d",
+                "10067d0e963103c7"
+            ]
+        ]
+    },
+    {
+        "id": "3a0ddf0957734e81",
+        "type": "json",
+        "z": "f0bc5fa387442a1c",
+        "name": "",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 810,
+        "y": 320,
+        "wires": [
+            [
+                "ab4f106cad5026fa"
+            ]
+        ]
+    },
+    {
+        "id": "ae46e31727f2231a",
+        "type": "http response",
+        "z": "f0bc5fa387442a1c",
+        "name": "",
+        "statusCode": "200",
+        "headers": {},
+        "x": 1240,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "935bb4ba629ac2fd",
+        "type": "function",
+        "z": "f0bc5fa387442a1c",
+        "name": "parse current",
+        "func": "// Ambil nilai dari payload HTTP POST\nlet current_value = Number(msg.payload.current);\n\n// Validasi\nif (isNaN(current_value)) {\n    node.warn(\"Payload arus tidak valid\");\n    return null;\n}\n\nmsg.metric = \"metric_pzem\";\n\nmsg.payload = {\n    op: \"set\",\n    val: current_value,\n    labels: {\n        label_current: \"data-current-sensor\"\n    }\n};\n\nreturn msg;\n\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 930,
+        "y": 380,
+        "wires": [
+            [
+                "a6f6b03cbecb10d2"
+            ]
+        ]
+    },
+    {
+        "id": "18ee52049ea4ad23",
+        "type": "function",
+        "z": "f0bc5fa387442a1c",
+        "name": "parse voltage",
+        "func": "// Ambil nilai dari payload HTTP POST\nlet voltage_value = Number(msg.payload.voltage);\n\n// Validasi\nif (isNaN(voltage_value)) {\n    node.warn(\"Payload arus tidak valid\");\n    return null;\n}\n\nmsg.metric = \"metric_pzem\";\n\nmsg.payload = {\n    op: \"set\",\n    val: voltage_value,\n    labels: {\n        label_voltage: \"data-voltage-sensor\"\n    }\n};\n\nreturn msg;\n\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 940,
+        "y": 420,
+        "wires": [
+            [
+                "a6f6b03cbecb10d2"
+            ]
+        ]
+    },
+    {
+        "id": "91bdfae52327c285",
+        "type": "function",
+        "z": "f0bc5fa387442a1c",
+        "name": "parse power",
+        "func": "// Ambil nilai dari payload HTTP POST\nlet power_value = Number(msg.payload.power);\n\n// Validasi\nif (isNaN(power_value)) {\n    node.warn(\"Payload arus tidak valid\");\n    return null;\n}\n\nmsg.metric = \"metric_pzem\";\n\nmsg.payload = {\n    op: \"set\",\n    val: power_value,\n    labels: {\n        label_power: \"data-power-sensor\"\n    }\n};\n\nreturn msg;\n\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 930,
+        "y": 460,
+        "wires": [
+            [
+                "a6f6b03cbecb10d2"
+            ]
+        ]
+    },
+    {
+        "id": "a702b93bd27d087d",
+        "type": "function",
+        "z": "f0bc5fa387442a1c",
+        "name": "parse frequency",
+        "func": "// Ambil nilai dari payload HTTP POST\nlet freq_value = Number(msg.payload.frequency);\n\n// Validasi\nif (isNaN(freq_value)) {\n    node.warn(\"Payload arus tidak valid\");\n    return null;\n}\n\nmsg.metric = \"metric_pzem\";\n\nmsg.payload = {\n    op: \"set\",\n    val: freq_value,\n    labels: {\n        label_freq: \"data-freq-sensor\"\n    }\n};\n\nreturn msg;\n\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 940,
+        "y": 500,
+        "wires": [
+            [
+                "a6f6b03cbecb10d2"
+            ]
+        ]
+    },
+    {
+        "id": "10067d0e963103c7",
+        "type": "debug",
+        "z": "f0bc5fa387442a1c",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 840,
+        "y": 560,
+        "wires": []
+    },
+    {
+        "id": "75e8471575cb5cb8",
+        "type": "inject",
+        "z": "f0bc5fa387442a1c",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "300",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 110,
+        "y": 200,
+        "wires": [
+            [
+                "74bf214bfd97a5a4"
+            ]
+        ]
+    },
+    {
+        "id": "f32ebbb1dbf64f7d",
+        "type": "http request",
+        "z": "f0bc5fa387442a1c",
+        "name": "",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "https://raw.githubusercontent.com/anisamsrh/webserver-ota/ota-github/ota/version.txt",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 450,
+        "y": 200,
+        "wires": [
+            [
+                "d8cf72308992f8e5"
+            ]
+        ]
+    },
+    {
+        "id": "d8cf72308992f8e5",
+        "type": "function",
+        "z": "f0bc5fa387442a1c",
+        "name": "function 1",
+        "func": "var githubVersion = msg.payload.trim();\nvar currentVersion = flow.get('known_version') || \"0.0.0\";\n\nif (githubVersion !== currentVersion) {\n    flow.set('known_version', githubVersion);\n    flow.set('update_pending', true);\n    node.warn(\"Update firmware terdeteksi: \" + githubVersion);\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 600,
+        "y": 200,
+        "wires": [
+            [
+                "a4594fb5a9bb504d"
+            ]
+        ]
+    },
+    {
+        "id": "a4594fb5a9bb504d",
+        "type": "change",
+        "z": "f0bc5fa387442a1c",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "update_pending",
+                "pt": "flow",
+                "to": "update_pending",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 790,
+        "y": 200,
+        "wires": [
+            [
+                "ab4f106cad5026fa"
+            ]
+        ]
+    },
+    {
+        "id": "ab4f106cad5026fa",
+        "type": "function",
+        "z": "f0bc5fa387442a1c",
+        "name": "function 2",
+        "func": "// Cek apakah ada request update yang tertunda\nvar updateStatus = flow.get('update_pending') || false;\n\nif (updateStatus === true) {\n    // Jika tombol sudah ditekan, kirim perintah RESTART ke ESP32\n    msg.payload = \"RESTART\";\n    \n    // Reset status kembali ke false agar tidak restart terus menerus\n    flow.set('update_pending', false);\n} else {\n    // Jika tidak ada update, kirim balasan normal\n    msg.payload = \"OK\";\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1000,
+        "y": 200,
+        "wires": [
+            [
+                "ae46e31727f2231a"
+            ]
+        ]
+    },
+    {
+        "id": "74bf214bfd97a5a4",
+        "type": "change",
+        "z": "f0bc5fa387442a1c",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "headers",
+                "pt": "msg",
+                "to": "{\"User-Agent\":\"Project NodeRed\"}",
+                "tot": "json"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 280,
+        "y": 200,
+        "wires": [
+            [
+                "f32ebbb1dbf64f7d"
+            ]
+        ]
+    },
+    {
+        "id": "a6f6b03cbecb10d2",
+        "type": "prometheus-exporter",
+        "z": "f0bc5fa387442a1c",
+        "name": "",
+        "metric": "2b6bb2b5616dd2ef",
+        "x": 1270,
+        "y": 440,
+        "wires": []
+    }
+]
