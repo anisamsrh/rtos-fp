@@ -8,7 +8,7 @@
 #include <secrets.h>
  
 // --- OTA ---
-const char* currentVersion = "1.0.0";
+const char* currentVersion = "1.0.1";
 const char* versionURL = VERSION_URL;
 const char* firmwareURL = FIRMWARE_URl;
 
@@ -162,7 +162,7 @@ void TaskSendToNodeRED(void *pvParameters) {
         Serial.println(httpResponseCode);
       }
       
-      // Serial.println("OTA OKE");
+      Serial.println("OTA OKE");
       http.end();
     }
   }
