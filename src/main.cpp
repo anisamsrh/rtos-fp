@@ -3,12 +3,18 @@
 #include <HTTPClient.h>
 #include <PZEM004Tv30.h>
 #include <ArduinoJson.h>
+#include <HTTPUpdate.h>
+#include <WiFiClientSecure.h>
 #include <secrets.h>
+ 
+// --- OTA ---
+const char* currentVersion = "1.0.0";
+const char* versionURL = VERSION_URL;
+const char* firmwareURL = FIRMWARE_URl;
 
 // --- KONFIGURASI WIFI & SERVER ---
 const char* ssid = WIFI_SSID;
 const char* password = WIFI_PASS;
-// Ganti dengan IP komputer yang menjalankan Node-RED
 const char* serverName = NODERED_URL;
 
 // --- KONFIGURASI PZEM ---
@@ -32,12 +38,70 @@ struct PowerData {
   float pf;
 };
 
-// --- TASK 1: BACA SENSOR (Core 1) ---
+void performFirmwareUpdate(WiFiClientSecure &client) {
+  httpUpdate.onProgress([](int cur, int total) {
+    Serial.printf("Progress: %d%%\n", (cur * 100) / total);
+  });
+  t_httpUpdate_return ret = httpUpdate.update(client, firmwareURL);
+
+  switch (ret) {
+    case HTTP_UPDATE_FAILED:
+      Serial.printf("HTTP_UPDATE_FAILD Error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
+      break;
+
+    case HTTP_UPDATE_NO_UPDATES:
+      Serial.println("HTTP_UPDATE_NO_UPDATES");
+      break;
+
+    case HTTP_UPDATE_OK:
+      Serial.println("HTTP_UPDATE_OK");
+      break;
+  }
+}
+
+void checkFirmwareUpdate() {
+  Serial.println("Checking for firmware update...");
+
+  WiFiClientSecure client;
+  client.setInsecure();
+
+  HTTPClient http;
+  
+  http.begin(client, versionURL);
+  int httpCode = http.GET();
+
+  if (httpCode == 200) {
+    String newVersion = http.getString();
+    newVersion.trim();
+
+    Serial.print("Current version: "); Serial.println(currentVersion);
+    Serial.print("Server version: "); Serial.println(newVersion);
+
+    if (newVersion > currentVersion) {
+      Serial.println("New version found! Updating...");
+
+      if (TaskSensorHandle != NULL) vTaskSuspend(TaskSensorHandle);
+      if (TaskNetworkHandle != NULL) vTaskSuspend(TaskNetworkHandle);
+
+      performFirmwareUpdate(client);
+
+      if (TaskSensorHandle != NULL) vTaskResume(TaskSensorHandle);
+      if (TaskNetworkHandle != NULL) vTaskResume(TaskNetworkHandle);
+    } else {
+      Serial.println("Device is up to date.");
+    }
+  } else {
+    Serial.print("Failed to check version update, error: ");
+    Serial.println(httpCode);
+  }
+  http.end();
+}
+
+// --- TASK 1 (Core 1) ---
 void TaskReadSensor(void *pvParameters) {
   for (;;) {
     PowerData data;
 
-    // Baca data dari PZEM
     data.voltage = pzem.voltage();
     data.current = pzem.current();
     data.power = pzem.power();
@@ -45,26 +109,23 @@ void TaskReadSensor(void *pvParameters) {
     data.frequency = pzem.frequency();
     data.pf = pzem.pf();
 
-    // Validasi sederhana (jika NaN, beri nilai 0)
     if (isnan(data.voltage)) data.voltage = 0.0;
     if (isnan(data.current)) data.current = 0.0;
     if (isnan(data.power)) data.power = 0.0;
     if (isnan(data.energy)) data.energy = 0.0;
 
-    // Kirim ke Queue (Tunggu maksimal 10 tick jika penuh)
     xQueueSend(sensorQueue, &data, (TickType_t)10);
 
-    // Delay task selama 2 detik (Non-blocking)
     vTaskDelay(2000 / portTICK_PERIOD_MS); 
   }
 }
 
-// --- TASK 2: KIRIM KE NODE-RED (Core 0) ---
+// --- TASK 2 (Core 0) ---
 void TaskSendToNodeRED(void *pvParameters) {
   PowerData receivedData;
 
   for (;;) {
-    // Cek status WiFi, reconnect jika putus
+    // check for wifi, reconnect if not
     if (WiFi.status() != WL_CONNECTED) {
       WiFi.disconnect();
       WiFi.reconnect();
@@ -74,14 +135,12 @@ void TaskSendToNodeRED(void *pvParameters) {
       continue;
     }
 
-    // Tunggu data dari Queue
     if (xQueueReceive(sensorQueue, &receivedData, (TickType_t)5000) == pdPASS) {
       
       HTTPClient http;
       http.begin(serverName);
       http.addHeader("Content-Type", "application/json");
 
-      // Buat JSON String
       JsonDocument doc;
       doc["voltage"] = receivedData.voltage;
       doc["current"] = receivedData.current;
@@ -93,17 +152,17 @@ void TaskSendToNodeRED(void *pvParameters) {
       String requestBody;
       serializeJson(doc, requestBody);
 
-      // Kirim POST Request
       int httpResponseCode = http.POST(requestBody);
 
       if (httpResponseCode > 0) {
-        Serial.print("Data Terkirim. Code: ");
+        Serial.print("Data sent successfully. Code: ");
         Serial.println(httpResponseCode);
       } else {
         Serial.print("Error sending POST: ");
         Serial.println(httpResponseCode);
       }
       
+      // Serial.println("OTA OKE");
       http.end();
     }
   }
@@ -121,23 +180,20 @@ void setup() {
   }
   Serial.println("\nWiFi Connected");
 
-  // Buat Queue (Kapasitas 10 item struct PowerData)
+  checkFirmwareUpdate();
+
+  // Capacity 10
   sensorQueue = xQueueCreate(10, sizeof(PowerData));
 
   if (sensorQueue == NULL) {
-    Serial.println("Gagal membuat Queue");
+    Serial.println("Failed to make Queue");
     while(1);
   }
 
-  // Buat Task
-  // Task Sensor di Core 1 (User app default)
   xTaskCreatePinnedToCore(TaskReadSensor, "ReadSensor", 4096, NULL, 1, &TaskSensorHandle, 1);
-  
-  // Task Network di Core 0 (Biasanya untuk WiFi/System radio)
   xTaskCreatePinnedToCore(TaskSendToNodeRED, "SendNodeRED", 8192, NULL, 1, &TaskNetworkHandle, 0);
 }
 
 void loop() {
-  // Loop kosong karena semua logic ada di Tasks
   vTaskDelete(NULL);
 }
