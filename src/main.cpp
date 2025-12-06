@@ -8,7 +8,7 @@
 #include <secrets.h>
  
 // --- OTA ---
-const char* currentVersion = "1.0.1";
+const char* currentVersion = "1.0.2";
 const char* versionURL = VERSION_URL;
 const char* firmwareURL = FIRMWARE_URl;
 
@@ -42,6 +42,7 @@ void performFirmwareUpdate(WiFiClientSecure &client) {
   httpUpdate.onProgress([](int cur, int total) {
     Serial.printf("Progress: %d%%\n", (cur * 100) / total);
   });
+  httpUpdate.setLedPin(2, LOW); 
   t_httpUpdate_return ret = httpUpdate.update(client, firmwareURL);
 
   switch (ret) {
@@ -157,12 +158,26 @@ void TaskSendToNodeRED(void *pvParameters) {
       if (httpResponseCode > 0) {
         Serial.print("Data sent successfully. Code: ");
         Serial.println(httpResponseCode);
+
+        String responseBody = http.getString();
+        JsonDocument responseDoc;
+        DeserializationError error = deserializeJson(responseDoc, responseBody);
+
+        if (!error) {
+          if (responseDoc["ota_update"] == true) {
+            Serial.println("Node-RED requested OTA Update!");
+            http.end(); 
+            
+            checkFirmwareUpdate();
+            continue; 
+          }
+        }
       } else {
         Serial.print("Error sending POST: ");
         Serial.println(httpResponseCode);
       }
       
-      Serial.println("OTA OKE");
+      Serial.println("OTA OKE PART 2");
       http.end();
     }
   }

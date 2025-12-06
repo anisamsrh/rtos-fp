@@ -37,27 +37,10 @@
         "y": 400,
         "wires": [
             [
-                "3a0ddf0957734e81",
                 "935bb4ba629ac2fd",
                 "18ee52049ea4ad23",
                 "91bdfae52327c285",
                 "a702b93bd27d087d",
-                "10067d0e963103c7"
-            ]
-        ]
-    },
-    {
-        "id": "3a0ddf0957734e81",
-        "type": "json",
-        "z": "f0bc5fa387442a1c",
-        "name": "",
-        "property": "payload",
-        "action": "",
-        "pretty": false,
-        "x": 810,
-        "y": 320,
-        "wires": [
-            [
                 "ab4f106cad5026fa"
             ]
         ]
@@ -69,8 +52,8 @@
         "name": "",
         "statusCode": "200",
         "headers": {},
-        "x": 1240,
-        "y": 160,
+        "x": 1180,
+        "y": 200,
         "wires": []
     },
     {
@@ -154,22 +137,6 @@
         ]
     },
     {
-        "id": "10067d0e963103c7",
-        "type": "debug",
-        "z": "f0bc5fa387442a1c",
-        "name": "debug 1",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "false",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 840,
-        "y": 560,
-        "wires": []
-    },
-    {
         "id": "75e8471575cb5cb8",
         "type": "inject",
         "z": "f0bc5fa387442a1c",
@@ -183,14 +150,14 @@
                 "vt": "str"
             }
         ],
-        "repeat": "300",
+        "repeat": "",
         "crontab": "",
         "once": false,
         "onceDelay": 0.1,
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 110,
+        "x": 100,
         "y": 200,
         "wires": [
             [
@@ -274,7 +241,7 @@
         "type": "function",
         "z": "f0bc5fa387442a1c",
         "name": "function 2",
-        "func": "// Cek apakah ada request update yang tertunda\nvar updateStatus = flow.get('update_pending') || false;\n\nif (updateStatus === true) {\n    // Jika tombol sudah ditekan, kirim perintah RESTART ke ESP32\n    msg.payload = \"RESTART\";\n    \n    // Reset status kembali ke false agar tidak restart terus menerus\n    flow.set('update_pending', false);\n} else {\n    // Jika tidak ada update, kirim balasan normal\n    msg.payload = \"OK\";\n}\n\nreturn msg;",
+        "func": "msg.payload = {\n    \"status\": \"success\",\n    \"ota_update\": false\n};\n\nvar updateStatus = flow.get('update_pending') || false;\n\nif (updateStatus === true) {\n    msg.payload.status = true;\n    \n    flow.set('update_pending', false);\n    node.warn(\"Trigger update for this device!\");\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -285,7 +252,8 @@
         "y": 200,
         "wires": [
             [
-                "ae46e31727f2231a"
+                "ae46e31727f2231a",
+                "fe31fc1daadbb4a9"
             ]
         ]
     },
@@ -324,6 +292,23 @@
         "metric": "2b6bb2b5616dd2ef",
         "x": 1270,
         "y": 440,
+        "wires": []
+    },
+    {
+        "id": "fe31fc1daadbb4a9",
+        "type": "debug",
+        "z": "f0bc5fa387442a1c",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1160,
+        "y": 260,
         "wires": []
     }
 ]
