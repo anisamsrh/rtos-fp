@@ -8,7 +8,7 @@
 #include <secrets.h>
  
 // --- OTA ---
-const char* currentVersion = "1.0.2";
+const char* currentVersion = "1.0.3";
 const char* versionURL = VERSION_URL;
 const char* firmwareURL = FIRMWARE_URl;
 
@@ -177,7 +177,7 @@ void TaskSendToNodeRED(void *pvParameters) {
         Serial.println(httpResponseCode);
       }
       
-      Serial.println("OTA OKE PART 2");
+      Serial.println("OTA OKE PART 3");
       http.end();
     }
   }
@@ -185,6 +185,7 @@ void TaskSendToNodeRED(void *pvParameters) {
 
 void setup() {
   Serial.begin(115200);
+  digitalWrite(2, HIGH);
 
   // Setup WiFi
   WiFi.begin(ssid, password);
