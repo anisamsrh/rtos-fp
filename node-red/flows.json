@@ -215,7 +215,7 @@
         "type": "function",
         "z": "f0bc5fa387442a1c",
         "name": "function 2",
-        "func": "msg.payload = {\n    \"status\": \"success\",\n    \"ota_update\": false\n};\n\nvar githubVersion = flow.get('known_version') || \"1.0.0\";\nvar espVersion = flow.get('esp_version') || \"1.0.0\";\n\nif (githubVersion > espVersion) {\n    msg.payload.ota_update = true;\n    \n    node.warn(\"Trigger update for this device!\");\n}\n\nreturn msg;",
+        "func": "msg.payload = {\n    \"status\": \"success\",\n    \"ota_update\": false,\n    \"version\" : \"\",\n    \"gversion\" : \"\",\n};\n\nvar githubVersion = flow.get('known_version') || \"1.0.0\";\nvar espVersion = flow.get('esp_version') || \"1.0.0\";\n\nmsg.payload.version = espVersion;\nmsg.payload.gversion = githubVersion;\n\nif (githubVersion > espVersion) {\n    msg.payload.ota_update = true;\n    \n    node.warn(\"Trigger update for this device!\");\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -307,7 +307,7 @@
                 "t": "set",
                 "p": "known_version",
                 "pt": "flow",
-                "to": "1.0.3",
+                "to": "1.0.4",
                 "tot": "str"
             }
         ],
@@ -347,11 +347,12 @@
         "type": "debug",
         "z": "f0bc5fa387442a1c",
         "name": "debug 1",
-        "active": true,
+        "active": false,
         "tosidebar": true,
         "console": false,
         "tostatus": false,
-        "complete": "false",
+        "complete": "payload",
+        "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
         "x": 1240,
@@ -363,7 +364,7 @@
         "type": "debug",
         "z": "f0bc5fa387442a1c",
         "name": "debug 2",
-        "active": true,
+        "active": false,
         "tosidebar": true,
         "console": false,
         "tostatus": false,
@@ -384,8 +385,9 @@
                 "t": "set",
                 "p": "esp_version",
                 "pt": "flow",
-                "to": "version",
-                "tot": "msg"
+                "to": "payload.version",
+                "tot": "msg",
+                "dc": true
             }
         ],
         "action": "",
@@ -397,8 +399,26 @@
         "y": 340,
         "wires": [
             [
-                "ab4f106cad5026fa"
+                "ab4f106cad5026fa",
+                "849aba4cfa81ca30"
             ]
         ]
+    },
+    {
+        "id": "849aba4cfa81ca30",
+        "type": "debug",
+        "z": "f0bc5fa387442a1c",
+        "name": "debug 3",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1260,
+        "y": 360,
+        "wires": []
     }
 ]

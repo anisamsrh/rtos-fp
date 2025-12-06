@@ -8,7 +8,7 @@
 #include <secrets.h>
  
 // --- OTA ---
-const char* currentVersion = "1.0.4";
+const char* currentVersion = "1.0.5";
 const char* versionURL = VERSION_URL;
 const char* firmwareURL = FIRMWARE_URl;
 
@@ -163,17 +163,15 @@ void TaskSendToNodeRED(void *pvParameters) {
         Serial.println(httpResponseCode);
 
         String responseBody = http.getString();
-        Serial.println(responseBody);
         JsonDocument responseDoc;
         DeserializationError error = deserializeJson(responseDoc, responseBody);
-        serializeJsonPretty(responseDoc, Serial);
 
         if (!error) {
           if (responseDoc["ota_update"] == true) {
             Serial.println("Node-RED requested OTA Update!");
             http.end(); 
             
-            checkFirmwareUpdate();
+            ESP.restart();
             continue; 
           }
         }
@@ -182,7 +180,7 @@ void TaskSendToNodeRED(void *pvParameters) {
         Serial.println(httpResponseCode);
       }
       
-      Serial.println("OTA OKE PART 4");
+      Serial.println("OTA OKE PART 5");
       http.end();
     }
   }
