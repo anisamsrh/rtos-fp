@@ -151,14 +151,14 @@
                 "vt": "str"
             }
         ],
-        "repeat": "60",
+        "repeat": "",
         "crontab": "",
         "once": false,
         "onceDelay": 0.1,
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 390,
+        "x": 380,
         "y": 200,
         "wires": [
             [
@@ -307,7 +307,7 @@
                 "t": "set",
                 "p": "known_version",
                 "pt": "flow",
-                "to": "0",
+                "to": "1.0.3",
                 "tot": "str"
             }
         ],
