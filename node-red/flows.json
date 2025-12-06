@@ -41,7 +41,8 @@
                 "18ee52049ea4ad23",
                 "91bdfae52327c285",
                 "a702b93bd27d087d",
-                "ab4f106cad5026fa"
+                "627474c5b2ab5a7a",
+                "e207d8b8d5ef3315"
             ]
         ]
     },
@@ -52,7 +53,7 @@
         "name": "",
         "statusCode": "200",
         "headers": {},
-        "x": 1180,
+        "x": 1280,
         "y": 200,
         "wires": []
     },
@@ -150,14 +151,14 @@
                 "vt": "str"
             }
         ],
-        "repeat": "",
+        "repeat": "60",
         "crontab": "",
         "once": false,
         "onceDelay": 0.1,
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 100,
+        "x": 390,
         "y": 200,
         "wires": [
             [
@@ -173,7 +174,7 @@
         "method": "GET",
         "ret": "txt",
         "paytoqs": "ignore",
-        "url": "https://raw.githubusercontent.com/anisamsrh/webserver-ota/ota-github/ota/version.txt",
+        "url": "https://raw.githubusercontent.com/anisamsrh/rtos-fp/ota-github/ota/version.txt",
         "tls": "",
         "persist": false,
         "proxy": "",
@@ -181,7 +182,7 @@
         "authType": "",
         "senderr": false,
         "headers": [],
-        "x": 450,
+        "x": 750,
         "y": 200,
         "wires": [
             [
@@ -194,41 +195,14 @@
         "type": "function",
         "z": "f0bc5fa387442a1c",
         "name": "function 1",
-        "func": "var githubVersion = msg.payload.trim();\nvar currentVersion = flow.get('known_version') || \"0.0.0\";\n\nif (githubVersion !== currentVersion) {\n    flow.set('known_version', githubVersion);\n    flow.set('update_pending', true);\n    node.warn(\"Update firmware terdeteksi: \" + githubVersion);\n}\n\nreturn msg;",
+        "func": "var githubVersion = msg.payload.trim();\nvar currentVersion = flow.get('known_version') || \"0.0.0\";\nif (githubVersion !== currentVersion) {\n    flow.set('known_version', githubVersion);\n    node.warn(\"Update firmware terdeteksi: \" + githubVersion);\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 600,
-        "y": 200,
-        "wires": [
-            [
-                "a4594fb5a9bb504d"
-            ]
-        ]
-    },
-    {
-        "id": "a4594fb5a9bb504d",
-        "type": "change",
-        "z": "f0bc5fa387442a1c",
-        "name": "",
-        "rules": [
-            {
-                "t": "set",
-                "p": "update_pending",
-                "pt": "flow",
-                "to": "update_pending",
-                "tot": "msg"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 790,
+        "x": 920,
         "y": 200,
         "wires": [
             [
@@ -241,19 +215,19 @@
         "type": "function",
         "z": "f0bc5fa387442a1c",
         "name": "function 2",
-        "func": "msg.payload = {\n    \"status\": \"success\",\n    \"ota_update\": false\n};\n\nvar updateStatus = flow.get('update_pending') || false;\n\nif (updateStatus === true) {\n    msg.payload.status = true;\n    \n    flow.set('update_pending', false);\n    node.warn(\"Trigger update for this device!\");\n}\n\nreturn msg;",
+        "func": "msg.payload = {\n    \"status\": \"success\",\n    \"ota_update\": false\n};\n\nvar githubVersion = flow.get('known_version') || \"1.0.0\";\nvar espVersion = flow.get('esp_version') || \"1.0.0\";\n\nif (githubVersion > espVersion) {\n    msg.payload.ota_update = true;\n    \n    node.warn(\"Trigger update for this device!\");\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1000,
+        "x": 1100,
         "y": 200,
         "wires": [
             [
                 "ae46e31727f2231a",
-                "fe31fc1daadbb4a9"
+                "3ae29b1ca9f31afb"
             ]
         ]
     },
@@ -276,7 +250,7 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 280,
+        "x": 570,
         "y": 200,
         "wires": [
             [
@@ -295,7 +269,97 @@
         "wires": []
     },
     {
-        "id": "fe31fc1daadbb4a9",
+        "id": "58baf610288944f2",
+        "type": "inject",
+        "z": "f0bc5fa387442a1c",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 400,
+        "y": 260,
+        "wires": [
+            [
+                "f3f3c86cce22b354"
+            ]
+        ]
+    },
+    {
+        "id": "f3f3c86cce22b354",
+        "type": "change",
+        "z": "f0bc5fa387442a1c",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "known_version",
+                "pt": "flow",
+                "to": "0",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 630,
+        "y": 260,
+        "wires": [
+            [
+                "a770efa8326e0186"
+            ]
+        ]
+    },
+    {
+        "id": "a770efa8326e0186",
+        "type": "function",
+        "z": "f0bc5fa387442a1c",
+        "name": "function 3",
+        "func": "msg.payload = flow.get(\"known_version\") || \"0.0.0\";;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 740,
+        "y": 340,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "3ae29b1ca9f31afb",
+        "type": "debug",
+        "z": "f0bc5fa387442a1c",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1240,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "627474c5b2ab5a7a",
         "type": "debug",
         "z": "f0bc5fa387442a1c",
         "name": "debug 2",
@@ -303,12 +367,38 @@
         "tosidebar": true,
         "console": false,
         "tostatus": false,
-        "complete": "payload",
-        "targetType": "msg",
+        "complete": "false",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1160,
-        "y": 260,
+        "x": 680,
+        "y": 520,
         "wires": []
+    },
+    {
+        "id": "e207d8b8d5ef3315",
+        "type": "change",
+        "z": "f0bc5fa387442a1c",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "esp_version",
+                "pt": "flow",
+                "to": "version",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 960,
+        "y": 340,
+        "wires": [
+            [
+                "ab4f106cad5026fa"
+            ]
+        ]
     }
 ]

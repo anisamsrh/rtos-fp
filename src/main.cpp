@@ -8,7 +8,7 @@
 #include <secrets.h>
  
 // --- OTA ---
-const char* currentVersion = "1.0.3";
+const char* currentVersion = "1.0.4";
 const char* versionURL = VERSION_URL;
 const char* firmwareURL = FIRMWARE_URl;
 
@@ -36,6 +36,7 @@ struct PowerData {
   float energy;
   float frequency;
   float pf;
+  String version;
 };
 
 void performFirmwareUpdate(WiFiClientSecure &client) {
@@ -109,6 +110,7 @@ void TaskReadSensor(void *pvParameters) {
     data.energy = pzem.energy();
     data.frequency = pzem.frequency();
     data.pf = pzem.pf();
+    data.version = currentVersion;
 
     if (isnan(data.voltage)) data.voltage = 0.0;
     if (isnan(data.current)) data.current = 0.0;
@@ -149,6 +151,7 @@ void TaskSendToNodeRED(void *pvParameters) {
       doc["energy"] = receivedData.energy;
       doc["frequency"] = receivedData.frequency;
       doc["pf"] = receivedData.pf;
+      doc["version"] = receivedData.version;
 
       String requestBody;
       serializeJson(doc, requestBody);
@@ -160,8 +163,10 @@ void TaskSendToNodeRED(void *pvParameters) {
         Serial.println(httpResponseCode);
 
         String responseBody = http.getString();
+        Serial.println(responseBody);
         JsonDocument responseDoc;
         DeserializationError error = deserializeJson(responseDoc, responseBody);
+        serializeJsonPretty(responseDoc, Serial);
 
         if (!error) {
           if (responseDoc["ota_update"] == true) {
@@ -177,7 +182,7 @@ void TaskSendToNodeRED(void *pvParameters) {
         Serial.println(httpResponseCode);
       }
       
-      Serial.println("OTA OKE PART 3");
+      Serial.println("OTA OKE PART 4");
       http.end();
     }
   }
@@ -185,6 +190,7 @@ void TaskSendToNodeRED(void *pvParameters) {
 
 void setup() {
   Serial.begin(115200);
+  pinMode(2, OUTPUT);
   digitalWrite(2, HIGH);
 
   // Setup WiFi
