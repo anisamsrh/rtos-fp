@@ -5,6 +5,7 @@
 #include <ArduinoJson.h>
 #include <HTTPUpdate.h>
 #include <WiFiClientSecure.h>
+#include <DHT.h>
 #include <secrets.h>
  
 // --- OTA ---
@@ -23,13 +24,18 @@ const char* serverName = NODERED_URL;
 #define PZEM_SERIAL Serial2
 PZEM004Tv30 pzem(PZEM_SERIAL, PZEM_RX_PIN, PZEM_TX_PIN);
 
+// --- KONFIGURASI DHT ---
+#define DHT_PIN 4
+#define DHT_TYPE DHT11
+DHT dht(DHT_PIN, DHT_TYPE);
+
 // --- KONFIGURASI RTOS ---
 TaskHandle_t TaskSensorHandle;
 TaskHandle_t TaskNetworkHandle;
 QueueHandle_t sensorQueue;
 
 // Struktur data untuk dikirim antar Task
-struct PowerData {
+struct Data {
   float voltage;
   float current;
   float power;
@@ -37,6 +43,7 @@ struct PowerData {
   float frequency;
   float pf;
   String version;
+  float temp;
 };
 
 void performFirmwareUpdate(WiFiClientSecure &client) {
@@ -102,7 +109,7 @@ void checkFirmwareUpdate() {
 // --- TASK 1 (Core 1) ---
 void TaskReadSensor(void *pvParameters) {
   for (;;) {
-    PowerData data;
+    Data data;
 
     data.voltage = pzem.voltage();
     data.current = pzem.current();
@@ -111,11 +118,13 @@ void TaskReadSensor(void *pvParameters) {
     data.frequency = pzem.frequency();
     data.pf = pzem.pf();
     data.version = currentVersion;
+    data.temp = dht.readTemperature();
 
     if (isnan(data.voltage)) data.voltage = 0.0;
     if (isnan(data.current)) data.current = 0.0;
     if (isnan(data.power)) data.power = 0.0;
     if (isnan(data.energy)) data.energy = 0.0;
+    if (isnan(data.temp)) data.temp = 0.0;
 
     xQueueSend(sensorQueue, &data, (TickType_t)10);
 
@@ -125,7 +134,7 @@ void TaskReadSensor(void *pvParameters) {
 
 // --- TASK 2 (Core 0) ---
 void TaskSendToNodeRED(void *pvParameters) {
-  PowerData receivedData;
+  Data receivedData;
 
   for (;;) {
     // check for wifi, reconnect if not
@@ -203,7 +212,7 @@ void setup() {
   checkFirmwareUpdate();
 
   // Capacity 10
-  sensorQueue = xQueueCreate(10, sizeof(PowerData));
+  sensorQueue = xQueueCreate(10, sizeof(Data));
 
   if (sensorQueue == NULL) {
     Serial.println("Failed to make Queue");
