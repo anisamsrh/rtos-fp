@@ -33,17 +33,17 @@
         "upload": false,
         "skipBodyParsing": false,
         "swaggerDoc": "",
-        "x": 690,
-        "y": 400,
+        "x": 710,
+        "y": 540,
         "wires": [
             [
                 "935bb4ba629ac2fd",
                 "18ee52049ea4ad23",
                 "91bdfae52327c285",
                 "a702b93bd27d087d",
-                "627474c5b2ab5a7a",
                 "e207d8b8d5ef3315",
-                "1f9ca2abb0679f7c"
+                "1f9ca2abb0679f7c",
+                "efac919e4ed67da4"
             ]
         ]
     },
@@ -54,8 +54,8 @@
         "name": "",
         "statusCode": "200",
         "headers": {},
-        "x": 1280,
-        "y": 200,
+        "x": 1760,
+        "y": 440,
         "wires": []
     },
     {
@@ -71,7 +71,7 @@
         "finalize": "",
         "libs": [],
         "x": 930,
-        "y": 380,
+        "y": 580,
         "wires": [
             [
                 "a6f6b03cbecb10d2"
@@ -91,7 +91,7 @@
         "finalize": "",
         "libs": [],
         "x": 940,
-        "y": 420,
+        "y": 620,
         "wires": [
             [
                 "a6f6b03cbecb10d2"
@@ -111,7 +111,7 @@
         "finalize": "",
         "libs": [],
         "x": 930,
-        "y": 460,
+        "y": 660,
         "wires": [
             [
                 "a6f6b03cbecb10d2"
@@ -131,7 +131,7 @@
         "finalize": "",
         "libs": [],
         "x": 940,
-        "y": 500,
+        "y": 700,
         "wires": [
             [
                 "a6f6b03cbecb10d2"
@@ -142,7 +142,7 @@
         "id": "75e8471575cb5cb8",
         "type": "inject",
         "z": "f0bc5fa387442a1c",
-        "name": "",
+        "name": "Check for Newest Vesion Now",
         "props": [
             {
                 "p": "payload"
@@ -152,14 +152,14 @@
                 "vt": "str"
             }
         ],
-        "repeat": "",
+        "repeat": "60",
         "crontab": "",
         "once": false,
         "onceDelay": 0.1,
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 380,
+        "x": 310,
         "y": 200,
         "wires": [
             [
@@ -171,7 +171,7 @@
         "id": "f32ebbb1dbf64f7d",
         "type": "http request",
         "z": "f0bc5fa387442a1c",
-        "name": "",
+        "name": "Get Newest Version",
         "method": "GET",
         "ret": "txt",
         "paytoqs": "ignore",
@@ -183,7 +183,7 @@
         "authType": "",
         "senderr": false,
         "headers": [],
-        "x": 750,
+        "x": 800,
         "y": 200,
         "wires": [
             [
@@ -195,7 +195,7 @@
         "id": "d8cf72308992f8e5",
         "type": "function",
         "z": "f0bc5fa387442a1c",
-        "name": "function 1",
+        "name": "Trigger OTA If Found",
         "func": "var githubVersion = msg.payload.trim();\nvar currentVersion = flow.get('known_version') || \"0.0.0\";\nif (githubVersion !== currentVersion) {\n    flow.set('known_version', githubVersion);\n    node.warn(\"Update firmware terdeteksi: \" + githubVersion);\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
@@ -203,32 +203,30 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 920,
+        "x": 1040,
         "y": 200,
         "wires": [
-            [
-                "ab4f106cad5026fa"
-            ]
+            []
         ]
     },
     {
         "id": "ab4f106cad5026fa",
         "type": "function",
         "z": "f0bc5fa387442a1c",
-        "name": "function 2",
-        "func": "msg.payload = {\n    \"status\": \"success\",\n    \"ota_update\": false,\n    \"version\" : \"\",\n    \"gversion\" : \"\",\n};\n\nvar githubVersion = flow.get('known_version') || \"1.0.0\";\nvar espVersion = flow.get('esp_version') || \"1.0.0\";\n\nmsg.payload.version = espVersion;\nmsg.payload.gversion = githubVersion;\n\nif (githubVersion > espVersion) {\n    msg.payload.ota_update = true;\n    \n    node.warn(\"Trigger update for this device!\");\n}\n\nreturn msg;",
+        "name": "Prepare Response",
+        "func": "const response = {\n    \"status\": \"success\",\n    \"ota_update\": false,\n    \"version\" : \"\",\n    \"gversion\" : \"\",\n    \"inference\" : {\n        \"prediction\" : msg.payload.prediction,\n        \"status\" : msg.payload.status\n    }\n};\n\nvar githubVersion = flow.get('known_version') || \"1.0.0\";\nvar espVersion = flow.get('esp_version') || \"1.0.0\";\n\nresponse.version = espVersion;\nresponse.gversion = githubVersion;\n\nif (githubVersion > espVersion) {\n    response.ota_update = true;\n    \n    node.warn(\"Trigger update for this device!\");\n}\n\nmsg.payload = response;\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1100,
-        "y": 200,
+        "x": 1510,
+        "y": 440,
         "wires": [
             [
                 "ae46e31727f2231a",
-                "3ae29b1ca9f31afb"
+                "9280bd55b609b297"
             ]
         ]
     },
@@ -265,15 +263,61 @@
         "z": "f0bc5fa387442a1c",
         "name": "",
         "metric": "2b6bb2b5616dd2ef",
-        "x": 1270,
-        "y": 440,
+        "x": 1320,
+        "y": 640,
         "wires": []
+    },
+    {
+        "id": "e207d8b8d5ef3315",
+        "type": "change",
+        "z": "f0bc5fa387442a1c",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "esp_version",
+                "pt": "flow",
+                "to": "payload.version",
+                "tot": "msg",
+                "dc": true
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 960,
+        "y": 540,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "1f9ca2abb0679f7c",
+        "type": "function",
+        "z": "f0bc5fa387442a1c",
+        "name": "parse temperature",
+        "func": "// Ambil nilai dari payload HTTP POST\nlet temp_value = Number(msg.payload.temp);\n\n// Validasi\nif (isNaN(temp_value)) {\n    node.warn(\"Payload temperature tidak valid\");\n    return null;\n}\n\nmsg.metric = \"metric_pzem\";\n\nmsg.payload = {\n    op: \"set\",\n    val: temp_value,\n    labels: {\n        label_temperature: \"temperature\"\n    }\n};\n\nreturn msg;\n\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 950,
+        "y": 740,
+        "wires": [
+            [
+                "a6f6b03cbecb10d2"
+            ]
+        ]
     },
     {
         "id": "58baf610288944f2",
         "type": "inject",
         "z": "f0bc5fa387442a1c",
-        "name": "",
+        "name": "Simulate Different Version",
         "props": [
             {
                 "p": "payload"
@@ -290,8 +334,8 @@
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 400,
-        "y": 260,
+        "x": 330,
+        "y": 140,
         "wires": [
             [
                 "f3f3c86cce22b354"
@@ -317,8 +361,8 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 630,
-        "y": 260,
+        "x": 590,
+        "y": 140,
         "wires": [
             [
                 "a770efa8326e0186"
@@ -329,7 +373,7 @@
         "id": "a770efa8326e0186",
         "type": "function",
         "z": "f0bc5fa387442a1c",
-        "name": "function 3",
+        "name": "Debug : Put Know Version in Payload",
         "func": "msg.payload = flow.get(\"known_version\") || \"0.0.0\";;\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
@@ -337,96 +381,61 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 740,
-        "y": 340,
+        "x": 890,
+        "y": 140,
         "wires": [
             []
         ]
     },
     {
-        "id": "3ae29b1ca9f31afb",
-        "type": "debug",
+        "id": "efac919e4ed67da4",
+        "type": "function",
         "z": "f0bc5fa387442a1c",
-        "name": "debug 1",
-        "active": false,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload",
-        "targetType": "msg",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 1240,
-        "y": 300,
-        "wires": []
-    },
-    {
-        "id": "627474c5b2ab5a7a",
-        "type": "debug",
-        "z": "f0bc5fa387442a1c",
-        "name": "debug 2",
-        "active": false,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "false",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 680,
-        "y": 520,
-        "wires": []
-    },
-    {
-        "id": "e207d8b8d5ef3315",
-        "type": "change",
-        "z": "f0bc5fa387442a1c",
-        "name": "",
-        "rules": [
-            {
-                "t": "set",
-                "p": "esp_version",
-                "pt": "flow",
-                "to": "payload.version",
-                "tot": "msg",
-                "dc": true
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 960,
-        "y": 340,
+        "name": "Prepare Request Inference",
+        "func": "const esp_data = {\n    'arus': msg.payload.current || 0.0, \n    'voltase' : msg.payload.volatage || 0.0, \n    'daya' : msg.payload.power || 0.0, \n    'frekuensi' : msg.payload.frequency || 0.0, \n    'suhu_dalam': msg.payload.temperature || 0.0, \n    'suhu_luar' : flow.get(\"suhu_luar\") || 0.0, \n    'prakiraan_suhu_luar' : flow.get(\"prakiraan_suhu_luar\") || 0.0\n};\n\nmsg.payload = esp_data;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1000,
+        "y": 440,
         "wires": [
             [
-                "ab4f106cad5026fa",
-                "849aba4cfa81ca30"
+                "4256d3074560e5ee"
             ]
         ]
     },
     {
-        "id": "849aba4cfa81ca30",
-        "type": "debug",
+        "id": "2589de6c2b5e29c8",
+        "type": "http request",
         "z": "f0bc5fa387442a1c",
-        "name": "debug 3",
-        "active": false,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload",
-        "targetType": "msg",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 1260,
-        "y": 360,
-        "wires": []
+        "name": "Request API BMKG",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "https://api.bmkg.go.id/publik/prakiraan-cuaca?adm4=31.71.01.1001",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 570,
+        "y": 260,
+        "wires": [
+            [
+                "f3782eb2c6d1b927"
+            ]
+        ]
     },
     {
-        "id": "3917338f21f937b9",
+        "id": "7e2f321c829e1db2",
         "type": "inject",
         "z": "f0bc5fa387442a1c",
-        "name": "",
+        "name": "Get BMKG Now",
         "props": [
             {
                 "p": "payload"
@@ -436,227 +445,103 @@
                 "vt": "str"
             }
         ],
-        "repeat": "",
+        "repeat": "60",
         "crontab": "",
         "once": false,
         "onceDelay": 0.1,
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 540,
-        "y": 700,
+        "x": 350,
+        "y": 260,
         "wires": [
             [
-                "37ab6e6f434a1e46",
-                "08099ae54db00652",
-                "b36c8125e7716014"
+                "2589de6c2b5e29c8"
             ]
         ]
     },
     {
-        "id": "37ab6e6f434a1e46",
-        "type": "http request",
-        "z": "f0bc5fa387442a1c",
-        "name": "Get Temperature",
-        "method": "GET",
-        "ret": "obj",
-        "paytoqs": "ignore",
-        "url": "http://localhost:9090/api/v1/query?query=temperature",
-        "tls": "",
-        "persist": false,
-        "proxy": "",
-        "insecureHTTPParser": false,
-        "authType": "",
-        "senderr": false,
-        "headers": [],
-        "x": 730,
-        "y": 660,
-        "wires": [
-            [
-                "60b6fe0b941a5537"
-            ]
-        ]
-    },
-    {
-        "id": "08099ae54db00652",
-        "type": "http request",
-        "z": "f0bc5fa387442a1c",
-        "name": "Get Current",
-        "method": "GET",
-        "ret": "obj",
-        "paytoqs": "ignore",
-        "url": "http://localhost:9090/api/v1/query?query=current",
-        "tls": "",
-        "persist": false,
-        "proxy": "",
-        "insecureHTTPParser": false,
-        "authType": "",
-        "senderr": false,
-        "headers": [],
-        "x": 710,
-        "y": 700,
-        "wires": [
-            [
-                "8068bd972f22cfb8"
-            ]
-        ]
-    },
-    {
-        "id": "b36c8125e7716014",
-        "type": "http request",
-        "z": "f0bc5fa387442a1c",
-        "name": "Get Power",
-        "method": "GET",
-        "ret": "obj",
-        "paytoqs": "ignore",
-        "url": "http://localhost:9090/api/v1/query?query=power",
-        "tls": "",
-        "persist": false,
-        "proxy": "",
-        "insecureHTTPParser": false,
-        "authType": "",
-        "senderr": false,
-        "headers": [],
-        "x": 710,
-        "y": 740,
-        "wires": [
-            [
-                "6ddce21f6370031e"
-            ]
-        ]
-    },
-    {
-        "id": "1f9ca2abb0679f7c",
+        "id": "f3782eb2c6d1b927",
         "type": "function",
         "z": "f0bc5fa387442a1c",
-        "name": "parse temperature",
-        "func": "// Ambil nilai dari payload HTTP POST\nlet temp_value = Number(msg.payload.temp);\n\n// Validasi\nif (isNaN(temp_value)) {\n    node.warn(\"Payload temperature tidak valid\");\n    return null;\n}\n\nmsg.metric = \"metric_pzem\";\n\nmsg.payload = {\n    op: \"set\",\n    val: temp_value,\n    labels: {\n        label_freq: \"temperature\"\n    }\n};\n\nreturn msg;\n\n",
+        "name": "Parse Suhu Now & +30m",
+        "func": "// BMKG response format:\n// data[0].cuaca[0] = array per jam\n\nlet data = msg.payload;\n\nif (!data || !data.data || !data.data[0] || !data.data[0].cuaca) {\n    node.warn(\"Data BMKG tidak valid\");\n    return null;\n}\n\nlet cuaca_list = data.data[0].cuaca[0];\n\nif (!Array.isArray(cuaca_list)) {\n    node.warn(\"Cuaca list bukan array\");\n    return null;\n}\n\n// Suhu sekarang (entry pertama)\nlet now = cuaca_list[0] || {};\nlet now_temp = now.t;\nlet now_time = now.local_datetime;\n\n// Suhu +30 menit (gunakan entry berikutnya karena BMKG hourly)\nlet next = cuaca_list[1] || {};\nlet next_temp = next.t;\nlet next_time = next.local_datetime;\n\nmsg.payload = {\n    suhu_sekarang: now_temp,\n    waktu_sekarang: now_time,\n    suhu_plus_30_menit: next_temp,\n    waktu_plus_30_menit: next_time\n};\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 950,
-        "y": 540,
+        "x": 830,
+        "y": 260,
+        "wires": [
+            [
+                "5372574dd769bb1a",
+                "0dee654e74a4bfd3"
+            ]
+        ]
+    },
+    {
+        "id": "5372574dd769bb1a",
+        "type": "change",
+        "z": "f0bc5fa387442a1c",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "suhu_luar",
+                "pt": "flow",
+                "to": "payload.suhu_sekarang",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1090,
+        "y": 260,
+        "wires": [
+            [
+                "c5f25b6a5977b6e6"
+            ]
+        ]
+    },
+    {
+        "id": "0dee654e74a4bfd3",
+        "type": "change",
+        "z": "f0bc5fa387442a1c",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "prakiraan_suhu_luar",
+                "pt": "flow",
+                "to": "payload.suhu_plus_30_menit",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1120,
+        "y": 300,
         "wires": [
             []
         ]
     },
     {
-        "id": "8e7fdb806a0f0153",
-        "type": "join",
-        "z": "f0bc5fa387442a1c",
-        "name": "Join Data",
-        "mode": "custom",
-        "build": "object",
-        "property": "payload",
-        "propertyType": "msg",
-        "key": "topic",
-        "joiner": "\\n",
-        "joinerType": "str",
-        "useparts": false,
-        "accumulate": true,
-        "timeout": "",
-        "count": "3",
-        "reduceRight": false,
-        "reduceExp": "",
-        "reduceInit": "",
-        "reduceInitType": "",
-        "reduceFixup": "",
-        "x": 1170,
-        "y": 700,
-        "wires": [
-            [
-                "443e58311cc330e3"
-            ]
-        ]
-    },
-    {
-        "id": "60b6fe0b941a5537",
-        "type": "function",
-        "z": "f0bc5fa387442a1c",
-        "name": "Add Topic Temperature",
-        "func": "msg.topic = \"temperature\"\nreturn msg;",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 960,
-        "y": 660,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "8068bd972f22cfb8",
-        "type": "function",
-        "z": "f0bc5fa387442a1c",
-        "name": "Add Topic Temperature",
-        "func": "msg.topic = \"current\"\nreturn msg;",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 960,
-        "y": 700,
-        "wires": [
-            [
-                "8e7fdb806a0f0153"
-            ]
-        ]
-    },
-    {
-        "id": "6ddce21f6370031e",
-        "type": "function",
-        "z": "f0bc5fa387442a1c",
-        "name": "Add Topic Power",
-        "func": "msg.topic = \"power\"\nreturn msg;",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 950,
-        "y": 740,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "443e58311cc330e3",
-        "type": "function",
-        "z": "f0bc5fa387442a1c",
-        "name": "Preparing JSON",
-        "func": "// Helper function untuk ambil nilai aman\nfunction getValue(promResponse) {\n    if (promResponse && \n        promResponse.data && \n        promResponse.data.result && \n        promResponse.data.result.length > 0) {\n\n        // Prometheus mengembalikan [\"timestamp\", \"value_string\"]\n        // Kita ambil index 1 dan parse ke Float\n        return parseFloat(promResponse.data.result[0].value[1]);\n    }\n    return 0.0; // Nilai default jika data kosong/error\n}\n\n// msg.payload sekarang berisi object gabungan dari Node Join\n// Sesuai topik yang kita set tadi\nvar v = getValue(msg.payload.voltage);\nvar c = getValue(msg.payload.current);\nvar t = getValue(msg.payload.temp);\n\n// Siapkan Payload untuk Python API\n// Urutan array HARUS SAMA dengan saat training model .pkl\nmsg.payload = {\n    \"data\": [v, c, t]\n};\n\nreturn msg;",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 1360,
-        "y": 700,
-        "wires": [
-            [
-                "dae24c9f5df1fdd4"
-            ]
-        ]
-    },
-    {
-        "id": "dae24c9f5df1fdd4",
+        "id": "4256d3074560e5ee",
         "type": "http request",
         "z": "f0bc5fa387442a1c",
         "name": "Get Inference",
         "method": "POST",
         "ret": "obj",
         "paytoqs": "body",
-        "url": "https://localhost:49000/predict",
+        "url": "http://localhost:49000/predict",
         "tls": "",
         "persist": false,
         "proxy": "",
@@ -664,28 +549,46 @@
         "authType": "",
         "senderr": false,
         "headers": [],
-        "x": 1560,
-        "y": 700,
+        "x": 1260,
+        "y": 440,
         "wires": [
             [
-                "c9ce6dc9fed87b3d"
+                "ab4f106cad5026fa"
             ]
         ]
     },
     {
-        "id": "c9ce6dc9fed87b3d",
+        "id": "c5f25b6a5977b6e6",
         "type": "debug",
         "z": "f0bc5fa387442a1c",
-        "name": "debug 4",
+        "name": "Show BMKG Response",
         "active": true,
         "tosidebar": true,
         "console": false,
         "tostatus": false,
-        "complete": "false",
+        "complete": "payload",
+        "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1740,
-        "y": 620,
+        "x": 1330,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "9280bd55b609b297",
+        "type": "debug",
+        "z": "f0bc5fa387442a1c",
+        "name": "Show Full Response",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1800,
+        "y": 480,
         "wires": []
     }
 ]
