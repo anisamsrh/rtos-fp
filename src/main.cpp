@@ -34,6 +34,12 @@ TaskHandle_t TaskSensorHandle;
 TaskHandle_t TaskNetworkHandle;
 QueueHandle_t sensorQueue;
 
+// --- KONFIGURASI BUZZER ---
+#define BUZZER_PIN 18
+#define BUZZER_CHANNEL 0
+#define BUZZER_FREQ 2000
+#define BUZZER_RES 8
+
 // Struktur data untuk dikirim antar Task
 struct Data {
   float voltage;
@@ -104,6 +110,15 @@ void checkFirmwareUpdate() {
     Serial.println(httpCode);
   }
   http.end();
+}
+
+void sentAlarm() {
+  for (int i = 0; i < 5; i++) {
+    ledcWriteTone(BUZZER_CHANNEL, 2500); // Bunyi frekuensi 2500Hz
+    delay(100);                   // Selama 100ms
+    ledcWriteTone(BUZZER_CHANNEL, 0);    // Diam (0Hz)
+    delay(50);                    // Selama 50ms
+  }
 }
 
 // --- TASK 1 (Core 1) ---
@@ -183,6 +198,11 @@ void TaskSendToNodeRED(void *pvParameters) {
             ESP.restart();
             continue; 
           }
+
+          if (responseDoc["inference"]["prediction"] == 1) {
+            Serial.println("Anomaly is detected");
+            sentAlarm();
+          }
         }
       } else {
         Serial.print("Error sending POST: ");
@@ -197,8 +217,6 @@ void TaskSendToNodeRED(void *pvParameters) {
 
 void setup() {
   Serial.begin(115200);
-  pinMode(2, OUTPUT);
-  digitalWrite(2, HIGH);
 
   // Setup WiFi
   WiFi.begin(ssid, password);
@@ -210,6 +228,9 @@ void setup() {
   Serial.println("\nWiFi Connected");
 
   checkFirmwareUpdate();
+
+  ledcSetup(BUZZER_CHANNEL, BUZZER_FREQ, BUZZER_RES);
+  ledcAttachPin(BUZZER_PIN, BUZZER_CHANNEL);
 
   // Capacity 10
   sensorQueue = xQueueCreate(10, sizeof(Data));
