@@ -42,7 +42,8 @@
                 "91bdfae52327c285",
                 "a702b93bd27d087d",
                 "627474c5b2ab5a7a",
-                "e207d8b8d5ef3315"
+                "e207d8b8d5ef3315",
+                "1f9ca2abb0679f7c"
             ]
         ]
     },
@@ -62,7 +63,7 @@
         "type": "function",
         "z": "f0bc5fa387442a1c",
         "name": "parse current",
-        "func": "// Ambil nilai dari payload HTTP POST\nlet current_value = Number(msg.payload.current);\n\n// Validasi\nif (isNaN(current_value)) {\n    node.warn(\"Payload arus tidak valid\");\n    return null;\n}\n\nmsg.metric = \"metric_pzem\";\n\nmsg.payload = {\n    op: \"set\",\n    val: current_value,\n    labels: {\n        label_current: \"data-current-sensor\"\n    }\n};\n\nreturn msg;\n\n",
+        "func": "// Ambil nilai dari payload HTTP POST\nlet current_value = Number(msg.payload.current);\n\n// Validasi\nif (isNaN(current_value)) {\n    node.warn(\"Payload arus tidak valid\");\n    return null;\n}\n\nmsg.metric = \"metric_pzem\";\n\nmsg.payload = {\n    op: \"set\",\n    val: current_value,\n    labels: {\n        label_current: \"current\"\n    }\n};\n\nreturn msg;\n\n",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -82,7 +83,7 @@
         "type": "function",
         "z": "f0bc5fa387442a1c",
         "name": "parse voltage",
-        "func": "// Ambil nilai dari payload HTTP POST\nlet voltage_value = Number(msg.payload.voltage);\n\n// Validasi\nif (isNaN(voltage_value)) {\n    node.warn(\"Payload arus tidak valid\");\n    return null;\n}\n\nmsg.metric = \"metric_pzem\";\n\nmsg.payload = {\n    op: \"set\",\n    val: voltage_value,\n    labels: {\n        label_voltage: \"data-voltage-sensor\"\n    }\n};\n\nreturn msg;\n\n",
+        "func": "// Ambil nilai dari payload HTTP POST\nlet voltage_value = Number(msg.payload.voltage);\n\n// Validasi\nif (isNaN(voltage_value)) {\n    node.warn(\"Payload arus tidak valid\");\n    return null;\n}\n\nmsg.metric = \"metric_pzem\";\n\nmsg.payload = {\n    op: \"set\",\n    val: voltage_value,\n    labels: {\n        label_voltage: \"voltage\"\n    }\n};\n\nreturn msg;\n\n",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -102,7 +103,7 @@
         "type": "function",
         "z": "f0bc5fa387442a1c",
         "name": "parse power",
-        "func": "// Ambil nilai dari payload HTTP POST\nlet power_value = Number(msg.payload.power);\n\n// Validasi\nif (isNaN(power_value)) {\n    node.warn(\"Payload arus tidak valid\");\n    return null;\n}\n\nmsg.metric = \"metric_pzem\";\n\nmsg.payload = {\n    op: \"set\",\n    val: power_value,\n    labels: {\n        label_power: \"data-power-sensor\"\n    }\n};\n\nreturn msg;\n\n",
+        "func": "// Ambil nilai dari payload HTTP POST\nlet power_value = Number(msg.payload.power);\n\n// Validasi\nif (isNaN(power_value)) {\n    node.warn(\"Payload arus tidak valid\");\n    return null;\n}\n\nmsg.metric = \"metric_pzem\";\n\nmsg.payload = {\n    op: \"set\",\n    val: power_value,\n    labels: {\n        label_power: \"power\"\n    }\n};\n\nreturn msg;\n\n",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -122,7 +123,7 @@
         "type": "function",
         "z": "f0bc5fa387442a1c",
         "name": "parse frequency",
-        "func": "// Ambil nilai dari payload HTTP POST\nlet freq_value = Number(msg.payload.frequency);\n\n// Validasi\nif (isNaN(freq_value)) {\n    node.warn(\"Payload arus tidak valid\");\n    return null;\n}\n\nmsg.metric = \"metric_pzem\";\n\nmsg.payload = {\n    op: \"set\",\n    val: freq_value,\n    labels: {\n        label_freq: \"data-freq-sensor\"\n    }\n};\n\nreturn msg;\n\n",
+        "func": "// Ambil nilai dari payload HTTP POST\nlet freq_value = Number(msg.payload.frequency);\n\n// Validasi\nif (isNaN(freq_value)) {\n    node.warn(\"Payload arus tidak valid\");\n    return null;\n}\n\nmsg.metric = \"metric_pzem\";\n\nmsg.payload = {\n    op: \"set\",\n    val: freq_value,\n    labels: {\n        label_freq: \"frequency\"\n    }\n};\n\nreturn msg;\n\n",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -419,6 +420,272 @@
         "statusType": "auto",
         "x": 1260,
         "y": 360,
+        "wires": []
+    },
+    {
+        "id": "3917338f21f937b9",
+        "type": "inject",
+        "z": "f0bc5fa387442a1c",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 540,
+        "y": 700,
+        "wires": [
+            [
+                "37ab6e6f434a1e46",
+                "08099ae54db00652",
+                "b36c8125e7716014"
+            ]
+        ]
+    },
+    {
+        "id": "37ab6e6f434a1e46",
+        "type": "http request",
+        "z": "f0bc5fa387442a1c",
+        "name": "Get Temperature",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://localhost:9090/api/v1/query?query=temperature",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 730,
+        "y": 660,
+        "wires": [
+            [
+                "60b6fe0b941a5537"
+            ]
+        ]
+    },
+    {
+        "id": "08099ae54db00652",
+        "type": "http request",
+        "z": "f0bc5fa387442a1c",
+        "name": "Get Current",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://localhost:9090/api/v1/query?query=current",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 710,
+        "y": 700,
+        "wires": [
+            [
+                "8068bd972f22cfb8"
+            ]
+        ]
+    },
+    {
+        "id": "b36c8125e7716014",
+        "type": "http request",
+        "z": "f0bc5fa387442a1c",
+        "name": "Get Power",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://localhost:9090/api/v1/query?query=power",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 710,
+        "y": 740,
+        "wires": [
+            [
+                "6ddce21f6370031e"
+            ]
+        ]
+    },
+    {
+        "id": "1f9ca2abb0679f7c",
+        "type": "function",
+        "z": "f0bc5fa387442a1c",
+        "name": "parse temperature",
+        "func": "// Ambil nilai dari payload HTTP POST\nlet temp_value = Number(msg.payload.temp);\n\n// Validasi\nif (isNaN(temp_value)) {\n    node.warn(\"Payload temperature tidak valid\");\n    return null;\n}\n\nmsg.metric = \"metric_pzem\";\n\nmsg.payload = {\n    op: \"set\",\n    val: temp_value,\n    labels: {\n        label_freq: \"temperature\"\n    }\n};\n\nreturn msg;\n\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 950,
+        "y": 540,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8e7fdb806a0f0153",
+        "type": "join",
+        "z": "f0bc5fa387442a1c",
+        "name": "Join Data",
+        "mode": "custom",
+        "build": "object",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "useparts": false,
+        "accumulate": true,
+        "timeout": "",
+        "count": "3",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "",
+        "reduceFixup": "",
+        "x": 1170,
+        "y": 700,
+        "wires": [
+            [
+                "443e58311cc330e3"
+            ]
+        ]
+    },
+    {
+        "id": "60b6fe0b941a5537",
+        "type": "function",
+        "z": "f0bc5fa387442a1c",
+        "name": "Add Topic Temperature",
+        "func": "msg.topic = \"temperature\"\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 660,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8068bd972f22cfb8",
+        "type": "function",
+        "z": "f0bc5fa387442a1c",
+        "name": "Add Topic Temperature",
+        "func": "msg.topic = \"current\"\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 700,
+        "wires": [
+            [
+                "8e7fdb806a0f0153"
+            ]
+        ]
+    },
+    {
+        "id": "6ddce21f6370031e",
+        "type": "function",
+        "z": "f0bc5fa387442a1c",
+        "name": "Add Topic Power",
+        "func": "msg.topic = \"power\"\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 950,
+        "y": 740,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "443e58311cc330e3",
+        "type": "function",
+        "z": "f0bc5fa387442a1c",
+        "name": "Preparing JSON",
+        "func": "// Helper function untuk ambil nilai aman\nfunction getValue(promResponse) {\n    if (promResponse && \n        promResponse.data && \n        promResponse.data.result && \n        promResponse.data.result.length > 0) {\n\n        // Prometheus mengembalikan [\"timestamp\", \"value_string\"]\n        // Kita ambil index 1 dan parse ke Float\n        return parseFloat(promResponse.data.result[0].value[1]);\n    }\n    return 0.0; // Nilai default jika data kosong/error\n}\n\n// msg.payload sekarang berisi object gabungan dari Node Join\n// Sesuai topik yang kita set tadi\nvar v = getValue(msg.payload.voltage);\nvar c = getValue(msg.payload.current);\nvar t = getValue(msg.payload.temp);\n\n// Siapkan Payload untuk Python API\n// Urutan array HARUS SAMA dengan saat training model .pkl\nmsg.payload = {\n    \"data\": [v, c, t]\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1360,
+        "y": 700,
+        "wires": [
+            [
+                "dae24c9f5df1fdd4"
+            ]
+        ]
+    },
+    {
+        "id": "dae24c9f5df1fdd4",
+        "type": "http request",
+        "z": "f0bc5fa387442a1c",
+        "name": "Get Inference",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "body",
+        "url": "https://localhost:49000/predict",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1560,
+        "y": 700,
+        "wires": [
+            [
+                "c9ce6dc9fed87b3d"
+            ]
+        ]
+    },
+    {
+        "id": "c9ce6dc9fed87b3d",
+        "type": "debug",
+        "z": "f0bc5fa387442a1c",
+        "name": "debug 4",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1740,
+        "y": 620,
         "wires": []
     }
 ]
