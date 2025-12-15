@@ -9,7 +9,7 @@
 #include <secrets.h>
  
 // --- OTA ---
-const char* currentVersion = "1.0.5";
+const char* currentVersion = "1.0.6";
 const char* versionURL = VERSION_URL;
 const char* firmwareURL = FIRMWARE_URl;
 
@@ -25,7 +25,7 @@ const char* serverName = NODERED_URL;
 PZEM004Tv30 pzem(PZEM_SERIAL, PZEM_RX_PIN, PZEM_TX_PIN);
 
 // --- KONFIGURASI DHT ---
-#define DHT_PIN 4
+#define DHT_PIN 14
 #define DHT_TYPE DHT11
 DHT dht(DHT_PIN, DHT_TYPE);
 
@@ -176,6 +176,7 @@ void TaskSendToNodeRED(void *pvParameters) {
       doc["frequency"] = receivedData.frequency;
       doc["pf"] = receivedData.pf;
       doc["version"] = receivedData.version;
+      doc["temperature"] = receivedData.temp;
 
       String requestBody;
       serializeJson(doc, requestBody);
@@ -199,17 +200,17 @@ void TaskSendToNodeRED(void *pvParameters) {
             continue; 
           }
 
-          if (responseDoc["inference"]["prediction"] == 1) {
-            Serial.println("Anomaly is detected");
-            sentAlarm();
-          }
+          // if (responseDoc["inference"]["prediction"] != 1) {
+          //   Serial.println("Anomaly is detected");
+          //   sentAlarm();
+          // }
         }
       } else {
         Serial.print("Error sending POST: ");
         Serial.println(httpResponseCode);
       }
       
-      Serial.println("OTA OKE PART 5");
+      Serial.println("OTA OKE PART 6");
       http.end();
     }
   }
@@ -221,9 +222,11 @@ void setup() {
   // Setup WiFi
   WiFi.begin(ssid, password);
   Serial.print("Connecting to WiFi");
-  while (WiFi.status() != WL_CONNECTED) {
+  int waitWifi = 0;
+  while (WiFi.status() != WL_CONNECTED && waitWifi < 10) {
     delay(500);
     Serial.print(".");
+    waitWifi += 1;
   }
   Serial.println("\nWiFi Connected");
 
@@ -231,6 +234,7 @@ void setup() {
 
   ledcSetup(BUZZER_CHANNEL, BUZZER_FREQ, BUZZER_RES);
   ledcAttachPin(BUZZER_PIN, BUZZER_CHANNEL);
+  dht.begin();
 
   // Capacity 10
   sensorQueue = xQueueCreate(10, sizeof(Data));
